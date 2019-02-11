@@ -35,26 +35,25 @@ loop(Socket) ->
 ~ erl -s ssl
 > c(h2),f(P),P=h2:start("http2.golang.org").
 ```
-服务端返回的讯息通过 `io:format("Socket got ~w~n",[Data])`显示如下内容:
+服务端返回的数据通过 `io:format("Socket got ~w~n",[Data])` 展示了一个 Frame 的基本讯息:
 ```
 Socket got <<0,0,24,4,0,0,0,0,0,0,5,0,16,0,0,0,3,0,0,0,250,0,6,0,16,1,64,0,4,0,16,0,0>>
 ```
-这里 0,0,24 表示 Length ; 4 表示 Type 为 SETTINGS
+Frame 中 0,0,24 表示 Length ; 4 表示 Type 为 SETTINGS .
 <div style="display: flex; flex-direction: row; justify-content: space-between;">
 <img src="/images/h2_frame.jpg" width="400px;" />
 <img src="/images/h2_frames.jpg" width="400px;" /> 
 </div>
 
 <br>
-对照下面这张 Type 的查询表: 
 
-0 - DATA: 表示返回了请求的数据;
-
-8 - WINDOW_UPDATE: flow control
+对照下面这张 Type 查询表: 
 
 <img src="/images/h2_type.jpg" width="450px;" />
 
-4 - SETTINGS: 设置的内容包括以下这些字段;
+- 0 - DATA: 表示返回了请求的数据;
+- 8 - WINDOW_UPDATE: flow control;
+- 4 - SETTINGS: 设置的内容包括以下这些字段
 
 如果有没返回的字段如: HEADER_TABLE_SIZE 和 ENABLE_PUSH , 则采用默认值
 
@@ -158,5 +157,17 @@ P ! {send,<<0,0,21,1,5,0,0,0,1,130,135,132,1,16,104,116,116,112,50,46,103,111,10
 <p>Congratulations, <b>you're using HTTP/2 right now</b>.</p>
  ... ...
 ```
-
-
+如果此时再发送一次相同的 GET 请求
+```
+P ! {send,<<0,0,21,1,5,0,0,0,1,130,135,132,1,16,104,116,116,112,50,46,103,111,108,97,110,103,46,111,114,103>>}.
+```
+返回的结果却是: Type = 7 表示 GOAWAY.
+```
+Got other frame <<0,0,8,7,0,0,0,0,0,0,0,0,1,0,0,0,1>>
+```
+重新编译, 换不同的 Stream ID 发送请求就可以正常返回数据了.
+```
+c(h2),f(P),P=h2:start("http2.golang.org").
+P ! {send,<<0,0,21,1,5,0,0,0,1,130,135,132,1,16,104,116,116,112,50,46,103,111,108,97,110,103,46,111,114,103>>}.
+P ! {send,<<0,0,21,1,5,0,0,0,3,130,135,132,1,16,104,116,116,112,50,46,103,111,108,97,110,103,46,111,114,103>>}.
+```
