@@ -59,7 +59,7 @@ SETTINGS: 设置的内容包括下表的所有字段;
 
 <div style="display: flex; flex-direction: row; justify-content: space-between;">
     <img src="/images/h2_setting.jpg" width="420px;" />
-    <img src="/images/h2_total.jpg" width="400px;" />
+    <img src="/images/h2_total.jpg" width="410px;" />
 </div>
 
 
@@ -102,22 +102,35 @@ HPACK 是一种表查找压缩方案，使用 Huffman 编码, 在客户端和服
 <img src="images/h2-static.jpg" width="360px;">
 </div>
 
-`:authority: http2.golang.org` 在动态表中会如何表示呢?
+<br>
 
-<div style="display: flex; flex-direction: row; justify-content: space-between;">
-<img src="images/h2_int.jpg" width="400px;">
-<img src="images/h2_string.jpg" width="400px;">
-</div>
+静态表中的 Header 压缩后都对应一个固定的值:
 
-静态表:
 <img src="images/h2_index.jpg" width="400px;">
 
-动态表不会无限添加下去, 视 SETTINGS 的 HEADER_TABLE_SIZE 而定:
+
+动态表如何压缩 Header Name/Value 呢?
+
+<div style="display: flex; flex-direction: row; justify-content: space-between;">
+<img src="images/h2_int.jpg" width="220px;">
+<img src="images/h2_string.jpg" width="220px;">
+</div>
+
+```
+0b10_0001100_0010000 + 31 = 34251
+```
+
+1. `:authority:` 是一个 `indexed name` , 65 代表它的 Index=1 ; 16 代表 value `http2.golang.org` 的长度;
+
+2. 不在静态表中的 Header Name 就要按照 `new name` 的方式完成.
+
 <img src="images/h2_http2.jpg" width="400px;">
+
+动态表中的 Header 不会无限添加下去, 视 SETTINGS 的 HEADER_TABLE_SIZE 而定.
 
 最终呈现的效果:
 <div style="display: flex; flex-direction: row; justify-content: space-between;">
-<img src="images/h2_final.jpg" width="400px;">
-<img src="images/h2_finals.jpg" width="400px;">
+<img src="images/h2_final.jpg" width="420px;">
+<img src="images/h2_finals.jpg" width="420px;">
 </div>
 
