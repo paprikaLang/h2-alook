@@ -144,3 +144,19 @@ GET 请求需要在 Request Headers 中设置 `:method: GET` 等请求头信息.
 <img src="images/h2_finals.jpg" width="420px;">
 </div>
 
+```
+ {send,Data} ->
+    ssl:send(Socket,Data),
+    loop(Socket)
+```
+进程接收到 send 函数直接通过 `ssl:send` 发送 data .
+```
+P ! {send,<<0,0,21,1,5,0,0,0,1,130,135,132,1,16,104,116,116,112,50,46,103,111,108,97,110,103,46,111,114,103>>}.
+```
+```
+ ... ...
+<p>Congratulations, <b>you're using HTTP/2 right now</b>.</p>
+ ... ...
+```
+
+
