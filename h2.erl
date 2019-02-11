@@ -9,11 +9,19 @@ init(Host) ->
         binary,
         {alpn_advertised_protocols,[<<"h2">>]}
         ]),
+    Magic = "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n",
+    Settings = <<0,0,0,4,0,0,0,0,0>>,
+    ssl:send(Socket,[Magic,Settings]),
     loop(Socket).
 
 loop(Socket) ->
     receive
         {ssl,Socket,Data} ->
-            io:format("Socket got ~w~n",[Data]),
+            parse(Data),
             loop(Socket)
     end.
+
+parse(<<_:24,4,0,_/binary>>) -> io:format("Got SETTINGS~n");
+parse(<<_:24,4,1,_/binary>>) -> io:format("Got SETTINGS_ACK~n");
+parse(<<_:24,8,_/binary>>) -> io:format("Got WINDOWN_UPDATE~n");
+parse(<<_:24,_,_/binary>> = Data) -> io:format("Got other frame ~p~n",[Data]).
